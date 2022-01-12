@@ -41,6 +41,7 @@ const reviewSchema = new mongoose.Schema({
   body: { type: String, required: true },
   response: String,
   recommend: { type: Boolean, required: true },
+  reported: { type: Boolean, default: false },
   reviewer_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Reviewer', required: true },
   product_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
   email: { type: String, required: true },

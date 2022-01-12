@@ -1,20 +1,10 @@
-/*  Execute this file from the command line by typing:
- *    mysql -u <USER> < schema.sql
- *    OR
- *    mysql -u <USER> -p < schema.sql
- *  For example, on a pairing station, it'll be
- *    mysql -u student -p < schema.sql
- *  and then you'll have to enter the password, student
- *  On your personal computer, if you haven't set up
- *  a password, it'll be
- *    mysql -u root < schema.sql
-*/
 DROP DATABASE IF EXISTS ratings_and_reviews;
 
 CREATE DATABASE ratings_and_reviews;
 
 \c ratings_and_reviews;
 
+{/* When  */}
 CREATE TABLE products (
   product_id INTEGER PRIMARY KEY NOT NULL
 );
@@ -49,8 +39,9 @@ CREATE TABLE reviewers (
   username CHAR(100) UNIQUE NOT NULL
 );
 
+{/* restrict rating to 1-5 */}
 CREATE TABLE reviews (
-  review_id INTEGER PRIMARY KEY NOT NULL,
+  review_id SERIAL PRIMARY KEY,
   rating INTEGER NOT NULL,
   summary TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -60,7 +51,8 @@ CREATE TABLE reviews (
   reviewer_id INTEGER REFERENCES reviewers(reviewer_id),
   email CHAR(100) NOT NULL,
   "date" TIMESTAMP WITH TIME ZONE,
-  helpfulness INTEGER DEFAULT 0
+  helpfulness INTEGER DEFAULT 0,
+  reported BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE TABLE review_photos (
