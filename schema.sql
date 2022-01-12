@@ -4,17 +4,21 @@ CREATE DATABASE ratings_and_reviews;
 
 \c ratings_and_reviews;
 
-{/* When  */}
 CREATE TABLE products (
   product_id INTEGER PRIMARY KEY NOT NULL
 );
 
 CREATE TABLE characteristics (
-  id SERIAL PRIMARY KEY,
-  characteristic_id INTEGER NOT NULL,
+  characteristic_id SERIAL PRIMARY KEY,
   name CHAR(100) NOT NULL,
-  value DECIMAL(17,16) DEFAULT 0,
-  product_id INTEGER REFERENCES products(product_id)
+  FOREIGN KEY product_id INTEGER REFERENCES products(product_id)
+);
+
+CREATE TABLE characteristics_ratings (
+  id SERIAL PRIMARY KEY,
+  FOREIGN KEY review_id INTEGER REFERENCES reviews(review_id)
+  FOREIGN KEY characteristic_id INTEGER REFERENCES characteristics(characteristic_id)
+  score DECIMAL(17,16) DEFAULT 0,
 );
 
 CREATE TABLE ratings (
@@ -24,14 +28,14 @@ CREATE TABLE ratings (
   "3" INTEGER DEFAULT 0,
   "4" INTEGER DEFAULT 0,
   "5" INTEGER DEFAULT 0,
-  product_id INTEGER REFERENCES products(product_id)
+  FOREIGN KEY product_id INTEGER REFERENCES products(product_id)
 );
 
 CREATE TABLE recommended (
   id SERIAL PRIMARY KEY,
   "true" INTEGER DEFAULT 0,
   "false" INTEGER DEFAULT 0,
-  product_id INTEGER REFERENCES products(product_id)
+  FOREIGN KEY product_id INTEGER REFERENCES products(product_id)
 );
 
 CREATE TABLE reviewers (
@@ -39,10 +43,10 @@ CREATE TABLE reviewers (
   username CHAR(100) UNIQUE NOT NULL
 );
 
-{/* restrict rating to 1-5 */}
+-- restrict rating to 1-5?
 CREATE TABLE reviews (
   review_id SERIAL PRIMARY KEY,
-  rating INTEGER NOT NULL,
+  rating SMALLINT NOT NULL,
   summary TEXT NOT NULL,
   body TEXT NOT NULL,
   response TEXT,
@@ -58,5 +62,5 @@ CREATE TABLE reviews (
 CREATE TABLE review_photos (
   id SERIAL PRIMARY KEY,
   url VARCHAR(200),
-  review_id INTEGER REFERENCES reviews(review_id)
+  FOREIGN KEY review_id INTEGER REFERENCES reviews(review_id)
 );
