@@ -1,12 +1,30 @@
 getting reviews of a product
 /get/reviews/:product_id
-
 need to join products with reviews with photos.
 return all information from reviews table & photos table where product id matches query.
 
+Attempt 1:
+select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM products JOIN reviews on products.product_id = reviews.product_id JOIN review_photos on reviews.review_id = review_photos.review_id where product.product_id = 1000011;
+
+Attempt 2:
+It seems like I need to separate the fetching of reviews from the fetching of review photos--if I join all tables and try to get a review with no photos, I'm unable to. The two queries below seem to work.
+
+select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness FROM products JOIN reviews on products.product_id = reviews.product_id where products.product_id = 1000011;
+
+select review_photos.review_id, review_photos.id, review_photos.url FROM products JOIN reviews on products.product_id = reviews.product_id JOIN review_photos on reviews.review_id = review_photos.review_id where products.product_id = 1000011;
+
+Attempt 3:
+select review_id, rating, summary, recommend, response, body, date, reviewer, helpfulness FROM reviews where product_id = 1000011;
+
+select review_photos.review_id, review_photos.id, review_photos.url FROM reviews JOIN review_photos using (review_id) where reviews.product_id = 1000011;
+
+Attempt 4:
+I figured out how to fetch everything I needed! I ended up using a left join with review_photos so I could include records where photos were missing. This query took 5.3ms to operate.
+
+select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM products JOIN reviews using (product_id) LEFT JOIN review_photos using (review_id) where reviews.product_id = 1000011;
+
 getting metadata of reviews for a product
 /get/reviews/meta/:product_id
-
 need to join products, reviews, characteristics, and characteristics_reviews.
 return all information from reviews, characteristics, and characteristics_reviews where product id matches query.
 
@@ -20,3 +38,8 @@ return summary and body of reviews where username matches query
 
 deleting a review.
 /put/reviews/:review_id
+delete a review where the review_id matches query (needs removal from 4 locations): photos, characteristics, characteristics_reviews, reviews
+
+editing a review.
+/put/reviews/:review_id
+edit a review where the review_id matches query (attempt to update 4 locations): photos, characteristics, characteristics_reviews, reviews

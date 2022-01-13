@@ -36,6 +36,8 @@ CREATE TABLE characteristics (
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
+CREATE INDEX char_product_id_idx ON characteristics(product_id);
+
 INSERT INTO characteristics select id, name, product_id from characteristics_temp;
 
 CREATE TEMP TABLE reviews_temp (
@@ -78,6 +80,8 @@ CREATE TABLE reviews (
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
+CREATE INDEX rev_product_id_idx ON reviews(product_id);
+
 INSERT INTO reviews select id, rating, summary, body, response, recommend, product_id, reviewer_name, reviewer_email, to_timestamp("date" / 1000), helpfulness, reported from reviews_temp;
 
 CREATE TEMP TABLE characteristics_reviews_temp (
@@ -98,6 +102,9 @@ CREATE TABLE characteristics_reviews (
   FOREIGN KEY (characteristic_id) REFERENCES characteristics(characteristic_id)
 );
 
+CREATE INDEX charrev_review_id_idx ON characteristics_reviews(review_id);
+CREATE INDEX charrev_char_id_idx ON characteristics_reviews(characteristic_id);
+
 INSERT INTO characteristics_reviews select id, value, review_id, characteristic_id from characteristics_reviews_temp;
 
 CREATE TEMP TABLE review_photos_temp (
@@ -114,5 +121,7 @@ CREATE TABLE review_photos (
   review_id INTEGER NOT NULL,
   FOREIGN KEY (review_id) REFERENCES reviews(review_id)
 );
+
+CREATE INDEX revphoto_review_id_idx ON review_photos(review_id);
 
 INSERT INTO review_photos select id, url, review_id from review_photos_temp;
