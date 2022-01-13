@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+//add reviews in the product schema--array that references id of review
 const productSchema = new mongoose.Schema({
   product_id: { type: Number, unique: true, required: true },
   characteristics: [
@@ -34,6 +35,7 @@ const reviewerSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', productSchema);
 const Reviewer = mongoose.model('Reviewer', reviewerSchema);
 
+// add characteristics into review.
 const reviewSchema = new mongoose.Schema({
   review_id: { type: Number, unique: true, required: true },
   rating: { type: Number, default: 0 },

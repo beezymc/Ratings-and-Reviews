@@ -1,0 +1,22 @@
+getting reviews of a product
+/get/reviews/:product_id
+
+need to join products with reviews with photos.
+return all information from reviews table & photos table where product id matches query.
+
+getting metadata of reviews for a product
+/get/reviews/meta/:product_id
+
+need to join products, reviews, characteristics, and characteristics_reviews.
+return all information from reviews, characteristics, and characteristics_reviews where product id matches query.
+
+posting a new review
+/post/reviews
+Need to insert data into 4 tables (assumed existing product): photos, characteristics, characteristics_reviews, reviews
+
+getting all reported reviews by username (returns a count + list of reported reviews);
+/get/reviews/reported/:username
+return summary and body of reviews where username matches query
+
+deleting a review.
+/put/reviews/:review_id

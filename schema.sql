@@ -4,63 +4,115 @@ CREATE DATABASE ratings_and_reviews;
 
 \c ratings_and_reviews;
 
-CREATE TABLE products (
-  product_id INTEGER PRIMARY KEY NOT NULL
+CREATE TEMP TABLE products_temp (
+  id SERIAL PRIMARY KEY,
+  name TEXT,
+  slogan TEXT,
+  description TEXT,
+  category TEXT,
+  default_price INTEGER
 );
+
+\copy products_temp FROM './data/product.csv' CSV HEADER;
+
+CREATE TABLE products (
+  product_id SERIAL PRIMARY KEY
+);
+
+INSERT INTO products(product_id) select id from products_temp;
+
+CREATE TEMP TABLE characteristics_temp (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER,
+  name TEXT
+);
+
+\copy characteristics_temp FROM './data/characteristics.csv' CSV HEADER;
 
 CREATE TABLE characteristics (
   characteristic_id SERIAL PRIMARY KEY,
-  name CHAR(100) NOT NULL,
-  FOREIGN KEY product_id INTEGER REFERENCES products(product_id)
+  name CHAR(20) NOT NULL,
+  product_id INTEGER NOT NULL,
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
-CREATE TABLE characteristics_ratings (
+INSERT INTO characteristics select id, name, product_id from characteristics_temp;
+
+CREATE TEMP TABLE reviews_temp (
   id SERIAL PRIMARY KEY,
-  FOREIGN KEY review_id INTEGER REFERENCES reviews(review_id)
-  FOREIGN KEY characteristic_id INTEGER REFERENCES characteristics(characteristic_id)
-  score DECIMAL(17,16) DEFAULT 0,
+  product_id INTEGER NOT NULL,
+  rating SMALLINT NOT NULL check (rating between 1 and 5),
+  "date" BIGINT,
+  summary VARCHAR(200) NOT NULL,
+  body TEXT NOT NULL,
+  recommend BOOLEAN NOT NULL,
+  reported BOOLEAN NOT NULL DEFAULT false,
+  reviewer_name CHAR(100),
+  reviewer_email CHAR(100) NOT NULL,
+  response TEXT DEFAULT NULL,
+  helpfulness INTEGER DEFAULT 0
 );
 
-CREATE TABLE ratings (
-  id SERIAL PRIMARY KEY,
-  "1" INTEGER DEFAULT 0,
-  "2" INTEGER DEFAULT 0,
-  "3" INTEGER DEFAULT 0,
-  "4" INTEGER DEFAULT 0,
-  "5" INTEGER DEFAULT 0,
-  FOREIGN KEY product_id INTEGER REFERENCES products(product_id)
-);
+\copy reviews_temp FROM './data/reviews.csv' CSV HEADER;
 
-CREATE TABLE recommended (
-  id SERIAL PRIMARY KEY,
-  "true" INTEGER DEFAULT 0,
-  "false" INTEGER DEFAULT 0,
-  FOREIGN KEY product_id INTEGER REFERENCES products(product_id)
-);
+-- CREATE TABLE reviewers (
+--   reviewer_id SERIAL PRIMARY KEY,
+--   username CHAR(100) UNIQUE NOT NULL
+-- );
 
-CREATE TABLE reviewers (
-  reviewer_id SERIAL PRIMARY KEY,
-  username CHAR(100) UNIQUE NOT NULL
-);
+-- INSERT INTO reviewers(username) select reviewer_name from reviews_temp on conflict (username) do nothing;
 
--- restrict rating to 1-5?
 CREATE TABLE reviews (
   review_id SERIAL PRIMARY KEY,
-  rating SMALLINT NOT NULL,
-  summary TEXT NOT NULL,
+  rating SMALLINT NOT NULL check (rating between 1 and 5),
+  summary VARCHAR(200) NOT NULL,
   body TEXT NOT NULL,
-  response TEXT,
+  response TEXT DEFAULT NULL,
   recommend BOOLEAN NOT NULL,
-  product_id INTEGER REFERENCES products(product_id),
-  reviewer_id INTEGER REFERENCES reviewers(reviewer_id),
+  product_id INTEGER NOT NULL,
+  reviewer CHAR(100) NOT NULL,
   email CHAR(100) NOT NULL,
   "date" TIMESTAMP WITH TIME ZONE,
   helpfulness INTEGER DEFAULT 0,
-  reported BOOLEAN NOT NULL DEFAULT false
+  reported BOOLEAN NOT NULL DEFAULT false,
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
+
+INSERT INTO reviews select id, rating, summary, body, response, recommend, product_id, reviewer_name, reviewer_email, to_timestamp("date" / 1000), helpfulness, reported from reviews_temp;
+
+CREATE TEMP TABLE characteristics_reviews_temp (
+  id SERIAL PRIMARY KEY,
+  characteristic_id INTEGER,
+  review_id INTEGER,
+  value INTEGER
+);
+
+\copy characteristics_reviews_temp FROM './data/characteristic_reviews.csv' CSV HEADER;
+
+CREATE TABLE characteristics_reviews (
+  id SERIAL PRIMARY KEY,
+  value SMALLINT NOT NULL check (value between 1 and 5),
+  review_id INTEGER NOT NULL,
+  characteristic_id INTEGER NOT NULL,
+  FOREIGN KEY (review_id) REFERENCES reviews(review_id),
+  FOREIGN KEY (characteristic_id) REFERENCES characteristics(characteristic_id)
+);
+
+INSERT INTO characteristics_reviews select id, value, review_id, characteristic_id from characteristics_reviews_temp;
+
+CREATE TEMP TABLE review_photos_temp (
+  id SERIAL PRIMARY KEY,
+  review_id INTEGER,
+  url TEXT
+);
+
+\copy review_photos_temp FROM './data/reviews_photos.csv' CSV HEADER;
 
 CREATE TABLE review_photos (
   id SERIAL PRIMARY KEY,
   url VARCHAR(200),
-  FOREIGN KEY review_id INTEGER REFERENCES reviews(review_id)
+  review_id INTEGER NOT NULL,
+  FOREIGN KEY (review_id) REFERENCES reviews(review_id)
 );
+
+INSERT INTO review_photos select id, url, review_id from review_photos_temp;
