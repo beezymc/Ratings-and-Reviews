@@ -19,27 +19,58 @@ select review_id, rating, summary, recommend, response, body, date, reviewer, he
 select review_photos.review_id, review_photos.id, review_photos.url FROM reviews JOIN review_photos using (review_id) where reviews.product_id = 1000011;
 
 Attempt 4:
-I figured out how to fetch everything I needed! I ended up using a left join with review_photos so I could include records where photos were missing. This query took 5.3ms to operate.
+I figured out how to fetch everything I needed! I ended up using a left join with review_photos so I could include records where photos were missing.
+Query Time: 5.3ms-55ms.
+select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM reviews LEFT JOIN review_photos using (review_id) where reviews.product_id = 1000011;
 
-select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM products JOIN reviews using (product_id) LEFT JOIN review_photos using (review_id) where reviews.product_id = 1000011;
+NOTE: Eventually need to add page, count, and sort params to this query based on params.
 
 getting metadata of reviews for a product
 /get/reviews/meta/:product_id
 need to join products, reviews, characteristics, and characteristics_reviews.
 return all information from reviews, characteristics, and characteristics_reviews where product id matches query.
 
-posting a new review
-/post/reviews
-Need to insert data into 4 tables (assumed existing product): photos, characteristics, characteristics_reviews, reviews
+Attempt 1:
+Query Time: 16ms
+select reviews.review_id, characteristics.name, characteristics_reviews.id,  characteristics_reviews.value FROM reviews JOIN characteristics_reviews using (review_id) JOIN characteristics using (characteristic_id)  where reviews.product_id = 1;
+
+select SUM(case when rating = 1 then 1 else 0 end) as one_count, SUM(case when rating = 2 then 1 else 0 end) as two_count, SUM(case when rating = 3 then 1 else 0 end) as three_count, SUM(case when rating = 4 then 1 else 0 end) as four_count, SUM(case when rating = 5 then 1 else 0 end) as five_count, SUM(case when recommend = true then 1 else 0 end) as true_count, SUM(case when recommend = false then 1 else 0 end) as false_count FROM reviews where product_id = 1000011;
 
 getting all reported reviews by username (returns a count + list of reported reviews);
 /get/reviews/reported/:username
+NOTE: In order to make this query quick, I placed indexes on reviewer and reported. Depending on how frequently we have scammers/bots/bad apples (i.e. if it was an infrequent query), we can remove the indices.
 return summary and body of reviews where username matches query
+select summary, body FROM reviews where reviewer = ? AND reported = true;
+
+posting a new review
+/post/reviews
+Need to insert data into 3 tables (assumed existing product/product characteristics): photos, characteristics_reviews, reviews.
+
+INSERT INTO reviews(product_id, rating, summary, body, recommend, reviewer, email, "date", helpfulness) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+SELECT characteristic_id, name from characteristics where product_id = ?;
+INSERT INTO characteristics_reviews(value, review_id, characteristic_id) VALUES(?, ?, ?);
+times # of characteristics.
+if photos
+INSERT INTO review_photos(url, review_id) VALUES (?, ?);
+times # of photos.
 
 deleting a review.
 /put/reviews/:review_id
-delete a review where the review_id matches query (needs removal from 4 locations): photos, characteristics, characteristics_reviews, reviews
+delete a review where the review_id matches query (needs removal from 4 locations): photos, characteristics, characteristics_reviews, reviews.
+DELETE a.*, b.*, c.* FROM reviews as a, reviews_characteristics as b, review_photos as c WHERE a.review_id = b.review_id AND b.review_id = c.review_id AND a.review_id = ?;
 
 editing a review.
 /put/reviews/:review_id
-edit a review where the review_id matches query (attempt to update 4 locations): photos, characteristics, characteristics_reviews, reviews
+edit a review where the review_id matches query (attempt to update 4 locations): photos, characteristics_reviews, reviews
+UPDATE reviews SET rating = ?, summary = ?, body = ?, reviewer = ?, email = ?, "date" = ?, helpfulness = ? where review_id = ?;
+SELECT characteristic_id from characteristics where product_id = ?;
+UPDATE characteristics_reviews SET value = ? where characteristic_id = ? AND review_id = ?;
+times # of characteristics.
+if photos
+SELECT id from reviews_photos where review_id = ?;
+UPDATE review_photos SET url = ? where id = ?;
+times # of photos.
+
+adding a response to a review.
+/put/reviews/response/:review_id
+UPDATE reviews SET response = ? where review_id = ?;

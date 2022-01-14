@@ -31,7 +31,7 @@ CREATE TEMP TABLE characteristics_temp (
 
 CREATE TABLE characteristics (
   characteristic_id SERIAL PRIMARY KEY,
-  name CHAR(20) NOT NULL,
+  name VARCHAR(20) NOT NULL,
   product_id INTEGER NOT NULL,
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
@@ -72,14 +72,16 @@ CREATE TABLE reviews (
   response TEXT DEFAULT NULL,
   recommend BOOLEAN NOT NULL,
   product_id INTEGER NOT NULL,
-  reviewer CHAR(100) NOT NULL,
-  email CHAR(100) NOT NULL,
+  reviewer VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL,
   "date" TIMESTAMP WITH TIME ZONE,
   helpfulness INTEGER DEFAULT 0,
   reported BOOLEAN NOT NULL DEFAULT false,
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
+CREATE INDEX rev_reported_idx ON reviews(reported);
+CREATE INDEX rev_reviewer_idx ON reviews(reviewer);
 CREATE INDEX rev_product_id_idx ON reviews(product_id);
 
 INSERT INTO reviews select id, rating, summary, body, response, recommend, product_id, reviewer_name, reviewer_email, to_timestamp("date" / 1000), helpfulness, reported from reviews_temp;
