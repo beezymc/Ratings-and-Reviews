@@ -86,6 +86,8 @@ CREATE INDEX rev_product_id_idx ON reviews(product_id);
 
 INSERT INTO reviews select id, rating, summary, body, response, recommend, product_id, reviewer_name, reviewer_email, to_timestamp("date" / 1000), helpfulness, reported from reviews_temp;
 
+ALTER SEQUENCE reviews_review_id_seq RESTART WITH 5774953;
+
 CREATE TEMP TABLE characteristics_reviews_temp (
   id SERIAL PRIMARY KEY,
   characteristic_id INTEGER,
@@ -109,6 +111,8 @@ CREATE INDEX charrev_char_id_idx ON characteristics_reviews(characteristic_id);
 
 INSERT INTO characteristics_reviews select id, value, review_id, characteristic_id from characteristics_reviews_temp;
 
+ALTER SEQUENCE characteristics_reviews_id_seq RESTART WITH 19327576;
+
 CREATE TEMP TABLE review_photos_temp (
   id SERIAL PRIMARY KEY,
   review_id INTEGER,
@@ -127,3 +131,5 @@ CREATE TABLE review_photos (
 CREATE INDEX revphoto_review_id_idx ON review_photos(review_id);
 
 INSERT INTO review_photos select id, url, review_id from review_photos_temp;
+
+ALTER SEQUENCE review_photos_id_seq RESTART WITH 2742541;

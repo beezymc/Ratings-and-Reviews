@@ -46,7 +46,7 @@ posting a new review
 /post/reviews
 Need to insert data into 3 tables (assumed existing product/product characteristics): photos, characteristics_reviews, reviews.
 
-INSERT INTO reviews(product_id, rating, summary, body, recommend, reviewer, email, "date", helpfulness) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO reviews(product_id, rating, summary, body, recommend, reviewer, email, "date") VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 SELECT characteristic_id, name from characteristics where product_id = ?;
 INSERT INTO characteristics_reviews(value, review_id, characteristic_id) VALUES(?, ?, ?);
 times # of characteristics.
@@ -55,7 +55,7 @@ INSERT INTO review_photos(url, review_id) VALUES (?, ?);
 times # of photos.
 
 deleting a review.
-/put/reviews/:review_id
+/delete/reviews/:review_id
 delete a review where the review_id matches query (needs removal from 4 locations): photos, characteristics, characteristics_reviews, reviews.
 DELETE a.*, b.*, c.* FROM reviews as a, reviews_characteristics as b, review_photos as c WHERE a.review_id = b.review_id AND b.review_id = c.review_id AND a.review_id = ?;
 
