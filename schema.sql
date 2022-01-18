@@ -74,7 +74,7 @@ CREATE TABLE reviews (
   product_id INTEGER NOT NULL,
   reviewer VARCHAR(100) NOT NULL,
   email VARCHAR(100) NOT NULL,
-  "date" TIMESTAMP WITH TIME ZONE,
+  "date" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   helpfulness INTEGER DEFAULT 0,
   reported BOOLEAN NOT NULL DEFAULT false,
   FOREIGN KEY (product_id) REFERENCES products(product_id)

@@ -42,7 +42,7 @@ module.exports = {
     const metadata = {};
     return pool.connect()
     .then(client => {
-      return client.query('select characteristics.name, characteristics_reviews.id,  characteristics_reviews.value FROM reviews JOIN characteristics_reviews using (review_id) JOIN characteristics using (characteristic_id)  where reviews.product_id = $1', [product_id])
+      return client.query('select characteristics.name, characteristics.characteristic_id, AVG(characteristics_reviews.value) as value FROM characteristics_reviews JOIN characteristics using (characteristic_id) where characteristics.product_id = $1 group by characteristics.characteristic_id', [product_id])
         .then(characteristicsRes => {
           metadata.characteristics = characteristicsRes.rows;
           return client.query('select SUM(case when rating = 1 then 1 else 0 end) as one_count, SUM(case when rating = 2 then 1 else 0 end) as two_count, SUM(case when rating = 3 then 1 else 0 end) as three_count, SUM(case when rating = 4 then 1 else 0 end) as four_count, SUM(case when rating = 5 then 1 else 0 end) as five_count, SUM(case when recommend = true then 1 else 0 end) as true_count, SUM(case when recommend = false then 1 else 0 end) as false_count FROM reviews where product_id = $1', [product_id])

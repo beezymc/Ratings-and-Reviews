@@ -16,7 +16,39 @@ module.exports = {
     const { product_id } = req.params;
     models.getProductReviews(product_id)
       .then((response) => {
-        res.send(response);
+        const productReviews = {
+          product: product_id,
+          page: 0,
+          count: 0,
+          results: []
+        };
+        let currReview;
+        const reviewIds = new Set();
+        for (let i = 0; i < response.length; i++) {
+          if (!reviewIds.has(response[i].review_id)) {
+            reviewIds.add(response[i].review_id);
+            currReview = {
+              review_id: response[i].review_id,
+              rating: response[i].rating,
+              summary: response[i].summary,
+              recommend: response[i].recommend,
+              response: response[i].response,
+              body: response[i].body,
+              date: response[i].date,
+              reviewer_name: response[i].reviewer,
+              helpfulness: response[i].helpfulness,
+              photos: []
+            }
+            productReviews.results.push(currReview);
+          }
+          if (response[i].id) {
+            currReview.photos.push({
+              id: response[i].id,
+              url: response[i].url
+            })
+          }
+        }
+        res.send(productReviews);
       })
       .catch((error) => {
         res.status(404).send(error);
@@ -26,7 +58,28 @@ module.exports = {
     const { product_id } = req.params;
     models.getProductReviewMetadata(product_id)
       .then((response) => {
-        res.send(response);
+        const reviewMetadata = {
+          product_id: product_id,
+          ratings: {
+            "1": response.counts[0].one_count,
+            "2": response.counts[0].two_count,
+            "3": response.counts[0].three_count,
+            "4": response.counts[0].four_count,
+            "5": response.counts[0].five_count
+          },
+          recommended: {
+            "true": response.counts[0].true_count,
+            "false": response.counts[0].false_count
+          },
+          characteristics: {}
+        }
+        for (let i = 0; i < response.characteristics.length; i++) {
+          reviewMetadata.characteristics[response.characteristics[i].name] = {
+            id: response.characteristics[i].characteristic_id,
+            value: response.characteristics[i].value
+          }
+        }
+        res.send(reviewMetadata);
       })
       .catch((error) => {
         res.status(404).send(error);
