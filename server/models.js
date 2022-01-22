@@ -99,7 +99,7 @@ module.exports = {
               })
           })
           for (let key in characteristics) {
-            client.query('INSERT INTO characteristics_reviews(value, review_id, characteristic_id) VALUES($1, $2, $3)', [characteristics[key], review_id, key]);
+            client.query('INSERT INTO characteristics_reviews(value, review_id, characteristic_id) VALUES($1, $2, $3)', [characteristics[key], review_id, key])
               .then (() => {
                 client.release();
               })
