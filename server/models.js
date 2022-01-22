@@ -82,7 +82,6 @@ module.exports = {
         })
     });
   },
-  //eventually need to improve the error handling for POST. Perhaps look into CTE--might be a way to rope things into one query.
   postReview: (product_id, rating, summary, body, recommend, name, email, photos, characteristics) => {
     return pool.connect()
     .then(client => {
@@ -91,9 +90,23 @@ module.exports = {
           const review_id = res.rows[0].review_id;
           photos.forEach((url) => {
             client.query('INSERT INTO review_photos(url, review_id) VALUES ($1, $2)', [url, review_id])
+              .then (() => {
+                client.release();
+              })
+              .catch(err => {
+                client.release();
+                return err.stack;
+              })
           })
           for (let key in characteristics) {
             client.query('INSERT INTO characteristics_reviews(value, review_id, characteristic_id) VALUES($1, $2, $3)', [characteristics[key], review_id, key]);
+              .then (() => {
+                client.release();
+              })
+              .catch(err => {
+                client.release();
+                return err.stack;
+              })
           }
           client.release();
         })
