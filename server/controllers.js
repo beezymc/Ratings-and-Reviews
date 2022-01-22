@@ -3,7 +3,9 @@ const pool = require('../database/index.js');
 const axios = require('axios');
 const redis = require('redis');
 
-const redisClient = redis.createClient();
+const redisClient = redis.createClient({
+  url: 'redis://redis:6379'
+});
 
 redisClient.on("error", (error) => {
   console.error(error);
