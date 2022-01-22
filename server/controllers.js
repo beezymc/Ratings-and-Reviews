@@ -27,23 +27,28 @@ module.exports = {
       });
   },
   getProductReviews: async (req, res) => {
-    const { product_id } = req.params;
     const productData = await redisClient.get(req.url)
     if (productData) {
       res.send(productData);
     } else {
-      models.getProductReviews(product_id)
+      const { product_id } = req.params;
+      let { count, page, sort } = req.query;
+      count = count || 5;
+      page = page || 1;
+      sort = sort || 'relevant';
+      models.getProductReviews(product_id, sort)
         .then(async (response) => {
           const productReviews = {
             product: product_id,
-            page: 0,
-            count: 0,
+            page: page,
+            count: count,
             results: []
           };
           let currReview;
           const reviewIds = new Set();
           for (let i = 0; i < response.length; i++) {
             if (!reviewIds.has(response[i].review_id)) {
+              if (productReviews.results.length === (page * count)) break;
               reviewIds.add(response[i].review_id);
               currReview = {
                 review_id: response[i].review_id,
@@ -76,11 +81,11 @@ module.exports = {
     }
   },
   getProductReviewMetadata: async (req, res) => {
-    const { product_id } = req.params;
     const productData = await redisClient.get(req.url)
     if (productData) {
       res.send(productData);
     } else {
+      const { product_id } = req.params;
       models.getProductReviewMetadata(product_id)
       .then(async (response) => {
         const reviewMetadata = {

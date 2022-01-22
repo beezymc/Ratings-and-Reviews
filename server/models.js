@@ -22,10 +22,11 @@ module.exports = {
     });
   },
   //Eventually add query params for pages, count, and sort.
-  getProductReviews: (product_id) => {
+  getProductReviews: (product_id, sort) => {
     return pool.connect()
     .then(client => {
-      return client.query('select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM reviews LEFT JOIN review_photos using (review_id) where reviews.product_id = $1', [product_id])
+      if (sort === 'newest') {
+        return client.query('select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM reviews LEFT JOIN review_photos using (review_id) where reviews.product_id = $1 AND reviews.reported = false ORDER BY reviews.date DESC', [product_id])
         .then(res => {
           client.release();
           return res.rows;
@@ -34,10 +35,29 @@ module.exports = {
           client.release();
           return err.stack;
         })
+      } else if (sort === 'helpful') {
+        return client.query('select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM reviews LEFT JOIN review_photos using (review_id) where reviews.product_id = $1 AND reviews.reported = false ORDER BY reviews.helpfulness DESC', [product_id])
+        .then(res => {
+          client.release();
+          return res.rows;
+        })
+        .catch(err => {
+          client.release();
+          return err.stack;
+        })
+      } else {
+        return client.query('select reviews.review_id, reviews.rating, reviews.summary, reviews.recommend, reviews.response, reviews.body, reviews.date, reviews.reviewer, reviews.helpfulness, review_photos.id, review_photos.url FROM reviews LEFT JOIN review_photos using (review_id) where reviews.product_id = $1 AND reviews.reported = false', [product_id])
+        .then(res => {
+          client.release();
+          return res.rows;
+        })
+        .catch(err => {
+          client.release();
+          return err.stack;
+        })
+      }
     });
   },
-  //Make the first query return the average value of characteristics_reviews.value where the characteristic names are identical.
-  //Perhaps there's a way to combine the queries?
   getProductReviewMetadata: (product_id) => {
     const metadata = {};
     return pool.connect()
