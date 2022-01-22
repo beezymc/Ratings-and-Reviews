@@ -19,8 +19,10 @@
   },
   "homepage": "https://github.com/Charming-Chestnut/SDC-Reviews#readme",
   "dependencies": {
+    "axios": "^0.25.0",
     "dotenv": "^11.0.0",
     "express": "^4.17.2",
-    "pg": "^8.7.1"
+    "pg": "^8.7.1",
+    "redis": "^4.0.2"
   }
 }

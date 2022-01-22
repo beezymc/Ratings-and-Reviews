@@ -1,5 +1,19 @@
 const models = require('./models.js');
 const pool = require('../database/index.js');
+const axios = require('axios');
+const redis = require('redis');
+
+const redisClient = redis.createClient();
+
+redisClient.on("error", (error) => {
+  console.error(error);
+});
+
+const redisStart = async () => {
+  await redisClient.connect();
+}
+
+redisStart();
 
 module.exports = {
   getReportedReviewerData: (req, res) => {
@@ -12,52 +26,63 @@ module.exports = {
         res.status(404).send(error);
       });
   },
-  getProductReviews: (req, res) => {
+  getProductReviews: async (req, res) => {
     const { product_id } = req.params;
-    models.getProductReviews(product_id)
-      .then((response) => {
-        const productReviews = {
-          product: product_id,
-          page: 0,
-          count: 0,
-          results: []
-        };
-        let currReview;
-        const reviewIds = new Set();
-        for (let i = 0; i < response.length; i++) {
-          if (!reviewIds.has(response[i].review_id)) {
-            reviewIds.add(response[i].review_id);
-            currReview = {
-              review_id: response[i].review_id,
-              rating: response[i].rating,
-              summary: response[i].summary,
-              recommend: response[i].recommend,
-              response: response[i].response,
-              body: response[i].body,
-              date: response[i].date,
-              reviewer_name: response[i].reviewer,
-              helpfulness: response[i].helpfulness,
-              photos: []
+    const productData = await redisClient.get(req.url)
+    if (productData) {
+      res.send(productData);
+    } else {
+      models.getProductReviews(product_id)
+        .then(async (response) => {
+          const productReviews = {
+            product: product_id,
+            page: 0,
+            count: 0,
+            results: []
+          };
+          let currReview;
+          const reviewIds = new Set();
+          for (let i = 0; i < response.length; i++) {
+            if (!reviewIds.has(response[i].review_id)) {
+              reviewIds.add(response[i].review_id);
+              currReview = {
+                review_id: response[i].review_id,
+                rating: response[i].rating,
+                summary: response[i].summary,
+                recommend: response[i].recommend,
+                response: response[i].response,
+                body: response[i].body,
+                date: response[i].date,
+                reviewer_name: response[i].reviewer,
+                helpfulness: response[i].helpfulness,
+                photos: []
+              }
+              productReviews.results.push(currReview);
             }
-            productReviews.results.push(currReview);
+            if (response[i].id) {
+              currReview.photos.push({
+                id: response[i].id,
+                url: response[i].url
+              })
+            }
           }
-          if (response[i].id) {
-            currReview.photos.push({
-              id: response[i].id,
-              url: response[i].url
-            })
-          }
-        }
-        res.send(productReviews);
+          await redisClient.set(req.url, JSON.stringify(productReviews));
+          res.send(productReviews);
       })
       .catch((error) => {
+        console.log(error);
         res.status(404).send(error);
       });
+    }
   },
-  getProductReviewMetadata: (req, res) => {
+  getProductReviewMetadata: async (req, res) => {
     const { product_id } = req.params;
-    models.getProductReviewMetadata(product_id)
-      .then((response) => {
+    const productData = await redisClient.get(req.url)
+    if (productData) {
+      res.send(productData);
+    } else {
+      models.getProductReviewMetadata(product_id)
+      .then(async (response) => {
         const reviewMetadata = {
           product_id: product_id,
           ratings: {
@@ -79,11 +104,13 @@ module.exports = {
             value: response.characteristics[i].value
           }
         }
+        await redisClient.set(req.url, JSON.stringify(reviewMetadata));
         res.send(reviewMetadata);
       })
       .catch((error) => {
         res.status(404).send(error);
       });
+    }
   },
   postReview: (req, res) => {
     const { product_id, rating, summary, body, recommend, name, email, photos, characteristics } = req.body;
