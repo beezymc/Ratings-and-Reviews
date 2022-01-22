@@ -2,8 +2,8 @@ const Router = require('express');
 const router = Router();
 const controllers = require('./controllers.js');
 
-router.get('/loaderio-931f930efe9f4449df9f6d050dc5d999', (req, res) => {
-  res.send('loaderio-931f930efe9f4449df9f6d050dc5d999');
+router.get('/loaderio-016b129c3fdd96489cccbb5c62ffa8e5', (req, res) => {
+  res.send('loaderio-016b129c3fdd96489cccbb5c62ffa8e5');
 });
 router.get('/reviews/reported/:reviewer', controllers.getReportedReviewerData);
 router.get('/reviews/meta/:product_id', controllers.getProductReviewMetadata);
