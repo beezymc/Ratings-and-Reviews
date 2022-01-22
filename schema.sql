@@ -4,42 +4,6 @@ CREATE DATABASE ratings_and_reviews;
 
 \c ratings_and_reviews;
 
-CREATE TEMP TABLE products_temp (
-  id SERIAL PRIMARY KEY,
-  name TEXT,
-  slogan TEXT,
-  description TEXT,
-  category TEXT,
-  default_price INTEGER
-);
-
-\copy products_temp FROM './data/product.csv' CSV HEADER;
-
-CREATE TABLE products (
-  product_id SERIAL PRIMARY KEY
-);
-
-INSERT INTO products(product_id) select id from products_temp;
-
-CREATE TEMP TABLE characteristics_temp (
-  id SERIAL PRIMARY KEY,
-  product_id INTEGER,
-  name TEXT
-);
-
-\copy characteristics_temp FROM './data/characteristics.csv' CSV HEADER;
-
-CREATE TABLE characteristics (
-  characteristic_id SERIAL PRIMARY KEY,
-  name VARCHAR(20) NOT NULL,
-  product_id INTEGER NOT NULL,
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
-);
-
-CREATE INDEX char_product_id_idx ON characteristics(product_id);
-
-INSERT INTO characteristics select id, name, product_id from characteristics_temp;
-
 CREATE TEMP TABLE reviews_temp (
   id SERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL,
@@ -76,17 +40,32 @@ CREATE TABLE reviews (
   email VARCHAR(100) NOT NULL,
   "date" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   helpfulness INTEGER DEFAULT 0,
-  reported BOOLEAN NOT NULL DEFAULT false,
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
+  reported BOOLEAN NOT NULL DEFAULT false
 );
 
-CREATE INDEX rev_reported_idx ON reviews(reported);
-CREATE INDEX rev_reviewer_idx ON reviews(reviewer);
 CREATE INDEX rev_product_id_idx ON reviews(product_id);
 
 INSERT INTO reviews select id, rating, summary, body, response, recommend, product_id, reviewer_name, reviewer_email, to_timestamp("date" / 1000), helpfulness, reported from reviews_temp;
 
 ALTER SEQUENCE reviews_review_id_seq RESTART WITH 5774953;
+
+CREATE TEMP TABLE characteristics_temp (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER,
+  name TEXT
+);
+
+\copy characteristics_temp FROM './data/characteristics.csv' CSV HEADER;
+
+CREATE TABLE characteristics (
+  characteristic_id SERIAL PRIMARY KEY,
+  name VARCHAR(20) NOT NULL,
+  product_id INTEGER NOT NULL
+);
+
+CREATE INDEX char_product_id_idx ON characteristics(product_id);
+
+INSERT INTO characteristics select id, name, product_id from characteristics_temp;
 
 CREATE TEMP TABLE characteristics_reviews_temp (
   id SERIAL PRIMARY KEY,

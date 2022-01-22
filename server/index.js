@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const mainRouter = require('./router.js');
-require('newrelic');
 
 app.use(express.json());
 app.use('/', mainRouter);

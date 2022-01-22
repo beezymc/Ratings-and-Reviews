@@ -5,7 +5,8 @@
   "main": "noSQL_Schema.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./server/index.js"
+    "start": "nodemon ./server/index.js",
+    "build": "NODE_ENV=production node ./server/index.js"
   },
   "repository": {
     "type": "git",
@@ -20,7 +21,6 @@
   "dependencies": {
     "dotenv": "^11.0.0",
     "express": "^4.17.2",
-    "newrelic": "^8.7.0",
     "pg": "^8.7.1"
   }
 }
