@@ -1,1 +1,10 @@
-
+version: '3.5'
+services:
+ reviewserver1:
+  image: nodeserver:latest
+   ports:
+   -  '3000:3000'
+   depends_on:
+   -  redis
+ redis:
+  image: redis:latest
