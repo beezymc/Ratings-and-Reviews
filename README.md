@@ -21,7 +21,7 @@ This project expects the following to be installed locally: A code editor, Git, 
   iii. PGDATABASE
   iv. PGPASSWORD
   v. PGPORT
-  vi. PORT
+  vi. PORT. 
 NOTE: Please .gitignore your .env file to prevent malicious actors from accessing your sensitive information.
 6. If running the server locally, remove the object parameter from the redis.createClient call in controllers.js.
 7. Type 'npm run start' in the command line. If everything had been installed correctly, the server should now run!
@@ -29,8 +29,9 @@ NOTE: Please .gitignore your .env file to prevent malicious actors from accessin
 1. Setting up AWS EC2 instances (at least two--one for the database and one for the server): https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html
 2. A tutorial on how to use Docker: https://github.com/dylanlrrb/Please-Contain-Yourself
 3. Suggested postgres settings in order to have your database accessible to remote computers: https://stackoverflow.com/questions/29712228/node-postgres-get-error-connect-econnrefused/42947385#42947385
-4. A quick and easy load balancing solution using nginx, if needed: https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
+4. A quick and easy load balancing solution using nginx, if needed: https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/. 
 NOTE: If load balancing, you will want to copy servers up to your use case (this project created 3) using AMI and distributing the load across servers accordingly using your preferred setting (this project used leastconn).
+5. For help in configuring docker or nginx, please refer to the deployment_settings folder in the root directory.
 ## Accessing the Current Deployment
 ### The current deployment can be found on the following endpoint:
 ec2-54-144-15-197.compute-1.amazonaws.com
