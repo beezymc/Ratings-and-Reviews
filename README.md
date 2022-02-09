@@ -31,3 +31,9 @@ NOTE: Please .gitignore your .env file to prevent malicious actors from accessin
 3. Suggested postgres settings in order to have your database accessible to remote computers: https://stackoverflow.com/questions/29712228/node-postgres-get-error-connect-econnrefused/42947385#42947385
 4. A quick and easy load balancing solution using nginx, if needed: https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
 NOTE: If load balancing, you will want to copy servers up to your use case (this project created 3) using AMI and distributing the load across servers accordingly using your preferred setting (this project used leastconn).
+## Accessing the Current Deployment
+The current deployment can be found on the following endpoint:
+ec2-54-144-15-197.compute-1.amazonaws.com
+To test, use the following routes:
+ec2-54-144-15-197.compute-1.amazonaws.com/reviews/1
+ec2-54-144-15-197.compute-1.amazonaws.com/reviews/meta/1
